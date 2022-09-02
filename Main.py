@@ -50,8 +50,6 @@ def get_article(article_title):
 
         article_data = data[article_start_index:article_end_index]
 
-        wtf("out.xml", article_data)
-
         return article_data
         
 
@@ -60,21 +58,5 @@ def wtf(filename, data):
     with open(filename, mode="wb") as f:
         f.write(data)
 
-xml = get_article("Polar coordinate system")
-
-
-
-"""
-with open(r"E:\Data" + "\\" + dump_file_name, mode="rb") as f:
-f.seek(163132176, 0)
-d = bz2.BZ2Decompressor()
-
-block = f.read(block_size)
-data = d.decompress(block)
-
-block2 = f.read(block_size)
-data2 = d.decompress(block2)
-
-wtf("out1.xml", data)
-wtf("out2.xml", data2)
-"""
+xml = get_article("Miradz")
+wtf("out.xml", xml)
