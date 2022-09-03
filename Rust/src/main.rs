@@ -1,8 +1,10 @@
-use std::{path::Path, fs::File, io::Read};
+use std::{path::Path, fs::File, io::{Read, BufReader, BufRead}, time::Instant};
 
 fn main() {
     let article = "CrCs2O4";
+    let t1 = Instant::now();
     let result = get_article_offset_id(article);
+    println!("{:?} seconds to search index", t1.elapsed());
 
     match result
     {
@@ -28,12 +30,11 @@ fn get_article_offset_id(article_title: &str) -> Option<IndexData>
         Ok(file) => file,
         Err(e) => panic!("couldn't open {}: {}", path.display(), e),
     };
+    let index_file = BufReader::new(index_file);
 
-    let mut index_data = String::new();
-    index_file.read_to_string(&mut index_data);
-
-    for article_data in index_data.lines()
+    for article_data in index_file.lines()
     {
+        let article_data = article_data.unwrap();
         let data: Vec<&str> = article_data.split(":").collect();
 
         let offset: usize = data[0].parse().expect("couldn't parse article byte offset");
