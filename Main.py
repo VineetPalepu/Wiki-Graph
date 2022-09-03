@@ -1,6 +1,5 @@
 import bz2
-from distutils.command.config import dump_file
-from pkgutil import get_data
+import timeit
 
 index_file_name = "enwiki-20211020-pages-articles-multistream-index.txt"
 dump_file_name = "enwiki-20211020-pages-articles-multistream.xml.bz2"
@@ -21,7 +20,10 @@ def get_article_offset_id(article_title):
         raise
 
 def get_article(article_title):
+    t0 = timeit.default_timer()
     offset, id = get_article_offset_id(article_title)
+    t1 = timeit.default_timer()
+    print("{} seconds to search index".format(t1-t0))
     with open(r"E:\Data" + "\\" + dump_file_name, mode="rb") as f:
         f.seek(offset)
         d = bz2.BZ2Decompressor()
@@ -30,17 +32,18 @@ def get_article(article_title):
         data = d.decompress(block)
         prev_data = data # maybe use for the off chance that the header of the xml gets split in two blocks
         while data.find("<title>{}</title>".format(article_title).encode()) == -1:
-            block = f.read(block_size)
+            block = f.read(block_size   )
             data = d.decompress(block)
 
         article_title_index = data.find("<title>{}</title>".format(article_title).encode())
 
         start = article_title_index
         while data.find("</page>".encode(), start) == -1:
+            print("------------multi page article------- this code actually did something")
+            input()
             block = f.read(block_size)
             data.append(d.decompress(block))
             start = 0
-
         article_end_index = data.find("</page>".encode(), article_title_index) + len("</page>".encode())
 
         article_start_index = data.rfind("<page>".encode(), 0, article_title_index)
@@ -50,13 +53,23 @@ def get_article(article_title):
 
         article_data = data[article_start_index:article_end_index]
 
+
+
+        t2 = timeit.default_timer()
+        print("{} seconds to find article".format(t2 - t1))
+        print("{} total seconds elapsed".format(t2 - t0))
+
         return article_data
         
 
 # write to file
+
 def wtf(filename, data):
     with open(filename, mode="wb") as f:
         f.write(data)
 
-xml = get_article("Miradz")
+xml = get_article("CrCs2O4")
 wtf("out.xml", xml)
+
+
+##### use continuous integration / continuous development or some shit like that to implement automatic performance testing
