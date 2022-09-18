@@ -51,7 +51,6 @@ pub struct IndexEntry {
 
 pub fn build_index(index_file: &str) -> Vec<IndexEntry> {
     let num_articles = count_lines(&index_file);
-    println!("{} articles in index", num_articles);
 
     let mut index: Vec<IndexEntry> = Vec::with_capacity(num_articles);
 

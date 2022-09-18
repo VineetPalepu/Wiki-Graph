@@ -10,6 +10,7 @@ macro_rules! benchmark {
 }
 
 fn main() {
+    bench_build_index();
     bench_count_lines();
     bench_get_article_offset_id();
 }
@@ -44,4 +45,13 @@ fn bench_count_lines()
     let index_file = format!("{}{}", dir, index_file);
 
     benchmark!(count_lines(&index_file));
+}
+
+fn bench_build_index()
+{
+    let dir = r"C:\Users\Vineet Palepu\Downloads\enwiki-20220101-pages-articles-multistream\";
+    let index_file = "enwiki-20220101-pages-articles-multistream-index.txt";
+    let index_file = format!("{}{}", dir, index_file);
+
+    benchmark!(build_index(&index_file));
 }
