@@ -8,7 +8,7 @@ pub struct IndexData {
     pub id: usize,
 }
 
-pub fn get_article_offset_id(index_file: &str, article_title: &str) -> Option<IndexData> {
+pub fn get_article_offset_id(index_file: &str, article_title: &str) -> Option<IndexEntry> {
     println!("Opening index located at {}", index_file);
 
     let index_file = match File::open(index_file) {
@@ -24,8 +24,8 @@ pub fn get_article_offset_id(index_file: &str, article_title: &str) -> Option<In
 
             let offset: usize = data[0].parse().expect("couldn't parse article byte offset");
             let id: usize = data[1].parse().expect("couldn't parse article ID");
-            let _title = data[2].trim();
-            return Some(IndexData { offset, id });
+            let title = data[2].trim().to_string();
+            return Some(IndexEntry { title, offset, id });
         }
     }
 
@@ -43,6 +43,7 @@ pub fn count_lines(index_file: &str) -> usize {
     return count;
 }
 #[derive(Debug)]
+#[derive(Clone)]
 pub struct IndexEntry {
     pub title: String,
     pub id: usize,
@@ -69,4 +70,17 @@ pub fn build_index(index_file: &str) -> Vec<IndexEntry> {
     }
 
     index
+}
+
+pub fn get_article_offset_id_from_index(index: &Vec<IndexEntry>, article_title: &str) -> Option<IndexEntry>
+{
+    for entry in index
+    {
+        if entry.title == article_title
+        {
+            return Some(entry.clone());
+        }
+    }
+
+    None
 }
