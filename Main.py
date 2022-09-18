@@ -1,12 +1,13 @@
 import bz2
 import timeit
 
-index_file_name = "enwiki-20211020-pages-articles-multistream-index.txt"
-dump_file_name = "enwiki-20211020-pages-articles-multistream.xml.bz2"
+path = "C:\\Users\\Vineet Palepu\\Downloads\\enwiki-20220101-pages-articles-multistream\\"
+index_file_name = "enwiki-20220101-pages-articles-multistream-index.txt"
+dump_file_name = "enwiki-20220101-pages-articles-multistream.xml.bz2"
 block_size = 262144
 
 def get_article_offset_id(article_title):
-    with open(r"E:\Data" + "\\" + index_file_name, encoding="utf-8") as f:
+    with open(path + index_file_name, encoding="utf-8") as f:
         lines = 0
         for line in f:
             data = line.split(":")
@@ -21,10 +22,11 @@ def get_article_offset_id(article_title):
 
 def get_article(article_title):
     t0 = timeit.default_timer()
+    print("Searching index for article")
     offset, id = get_article_offset_id(article_title)
     t1 = timeit.default_timer()
     print("{} seconds to search index".format(t1-t0))
-    with open(r"E:\Data" + "\\" + dump_file_name, mode="rb") as f:
+    with open(path + dump_file_name, mode="rb") as f:
         f.seek(offset)
         d = bz2.BZ2Decompressor()
         # reads the bytes of the entire stream (100 articles) and then decompresses them
@@ -68,7 +70,7 @@ def wtf(filename, data):
     with open(filename, mode="wb") as f:
         f.write(data)
 
-xml = get_article("CrCs2O4")
+xml = get_article("OpenHistoricalMap")
 wtf("out.xml", xml)
 
 
