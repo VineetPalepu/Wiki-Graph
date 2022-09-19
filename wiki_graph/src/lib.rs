@@ -1,6 +1,6 @@
 use std::{
     fs::File,
-    io::{BufRead, BufReader},
+    io::{BufRead, BufReader}, time::Instant,
 };
 
 pub struct IndexData {
@@ -68,19 +68,24 @@ pub fn build_index(index_file: &str) -> Vec<IndexEntry> {
 
         index.push(IndexEntry { title, id, offset });
     }
+    let t = Instant::now();
+    index.sort_unstable_by(|a, b| { a.title.cmp(&b.title) });
+    println!("{:?} seconds elapsed to sort index", t.elapsed());
 
     index
 }
 
 pub fn get_article_offset_id_from_index(index: &Vec<IndexEntry>, article_title: &str) -> Option<IndexEntry>
 {
-    for entry in index
+    let result = index.binary_search_by(|a| { a.title.cmp(&article_title.to_string())} );
+
+    match result
     {
-        if entry.title == article_title
+        Ok(i) => Some(index[i].clone()),
+        Err(_) => 
         {
-            return Some(entry.clone());
+            println!("article \'{}\' not found", article_title);
+            None
         }
     }
-
-    None
 }
