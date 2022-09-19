@@ -1,5 +1,5 @@
 // TODO: Make a hierarchical wiki browser, i.e. when you click a link it keeps track of which article you came from and when you finish an article it goes back to the parent article
-
+use std::fs::write;
 use std::fs::File;
 use std::path::Path;
 use std::time::Instant;
@@ -70,7 +70,7 @@ fn main() {
                 data.id, data.offset
             );
             let contents = get_article(Path::new(&data_file), data.offset, data.id);
-            println!("{}", contents);
+            write("out.xml", contents).unwrap();
         }
         None => println!("article {article} not found"),
     }
