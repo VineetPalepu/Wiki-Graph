@@ -41,26 +41,7 @@ fn main() {
         }
     };
 
-    // if cache file exists
-    // load
-    // else
-    // build index and save it for next time
-    /*
-    let index = build_index(&index_file);
-
-    let t = Instant::now();
-    save_index(&index, "index.dat");
-    println!("{:?} seconds elapsed to save index", t.elapsed());
-
-    let t = Instant::now();
-    let index = load_index("index.dat");
-    println!("{:?} seconds elapsed to load index", t.elapsed());
-
-    let head = &index[0..10];
-    println!("{:?}", head);
-    */
-
-    let article = "OpenHistoricalMap";
+    let article = "Wireless application service provider";
     //let result = wiki_graph::get_article_offset_id(&index_file, article);
     let result = get_article_offset_id_from_index(&index, article);
     match result {
@@ -69,7 +50,7 @@ fn main() {
                 "article {article} found with id {} and offset {}",
                 data.id, data.offset
             );
-            let contents = get_article(Path::new(&data_file), data.offset, data.id);
+            let contents = get_article(Path::new(&data_file), article, data.offset, data.id);
             write("out.xml", contents).unwrap();
         }
         None => println!("article {article} not found"),
