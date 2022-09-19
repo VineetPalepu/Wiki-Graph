@@ -1,8 +1,9 @@
 use std::{
+    convert::TryInto,
     fs::{read, File},
     io::{BufRead, BufReader, Read, Seek, SeekFrom},
     path::Path,
-    time::Instant, convert::TryInto,
+    time::Instant,
 };
 
 use bincode2::{deserialize, serialize};
@@ -95,20 +96,39 @@ pub fn get_article_offset_id_from_index(
     }
 }
 
-pub fn get_article(data_file: &Path, offset: usize, _id: usize) -> String {
+pub fn get_article(data_file: &Path, title: &str, offset: usize, _id: usize) -> String {
     let data_file =
         File::open(data_file).expect(stringify!("couldn't open file {}", data_file.display()));
     let mut data_file = BufReader::new(data_file);
     let offset: u64 = offset.try_into().expect("offset too large???");
-    data_file.seek(SeekFrom::Start(offset)).expect(stringify!("couldn't seek to offset {}", offset));
+    data_file
+        .seek(SeekFrom::Start(offset))
+        .expect(stringify!("couldn't seek to offset {}", offset));
     let mut decompressor = BzDecoder::new(data_file);
     let mut contents = String::new();
     decompressor
         .read_to_string(&mut contents)
         .expect("failed to decompress");
 
-    contents
+    let title_index = contents.find(&format!("<title>{}</title>", title));
+    let article = match title_index {
+        Some(title_index) => {
+            let start_index = contents[..title_index]
+                .rfind("<page>")
+                .expect("couldn't find beginning of page");
+            let end_index = contents[title_index..]
+                .find("</page>")
+                .map(|i| title_index + i + 7)
+                .expect("couldn't find end of page");
+
+            &contents[start_index..end_index]
+        }
+        None => panic!("article not found in block, implment multiple block reading"),
+    };
+
+    article.to_string()
 }
+
 pub fn save_index(index: &Vec<IndexEntry>, file_name: &str) {
     let binary_data = serialize(index).unwrap();
     std::fs::write(file_name, binary_data).unwrap();
