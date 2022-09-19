@@ -1,7 +1,9 @@
 use std::{
     fs::File,
-    io::{BufRead, BufReader}, time::Instant,
+    io::{BufRead, BufReader, Read}, time::Instant, path::Path,
 };
+
+use bzip2::bufread::{BzDecoder, BzEncoder};
 
 pub struct IndexData {
     pub offset: usize,
@@ -90,7 +92,13 @@ pub fn get_article_offset_id_from_index(index: &Vec<IndexEntry>, article_title: 
     }
 }
 
-pub fn get_article(offset: usize, id: usize)
+pub fn get_article(data_file: &Path, offset: usize, id: usize) -> stringify!()
 {
-    
+    let data_file = File::open(data_file).expect(stringify!("couldn't open file {}", data_file.display()));
+    let data_file = BufReader::new(data_file);
+    let mut decompressor = BzDecoder::new(data_file);
+    let mut contents = String::new();
+    decompressor.read_to_string(&mut contents).expect("failed to decompress");
+
+    contents
 }
