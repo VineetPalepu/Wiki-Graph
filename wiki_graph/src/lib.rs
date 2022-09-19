@@ -89,3 +89,8 @@ pub fn get_article_offset_id_from_index(index: &Vec<IndexEntry>, article_title: 
         }
     }
 }
+
+pub fn get_article(offset: usize, id: usize)
+{
+    
+}
