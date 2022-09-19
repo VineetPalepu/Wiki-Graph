@@ -17,7 +17,7 @@ fn main() {
 
     let index = match file {
         // if cache file exists
-        Ok(f) => {
+        Ok(_file) => {
             println!("found cached index at: {}", cache_file);
             let t = Instant::now();
             let index = load_index(cache_file);

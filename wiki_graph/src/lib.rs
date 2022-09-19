@@ -95,7 +95,7 @@ pub fn get_article_offset_id_from_index(
     }
 }
 
-pub fn get_article(data_file: &Path, offset: usize, id: usize) -> String {
+pub fn get_article(data_file: &Path, offset: usize, _id: usize) -> String {
     let data_file =
         File::open(data_file).expect(stringify!("couldn't open file {}", data_file.display()));
     let mut data_file = BufReader::new(data_file);
