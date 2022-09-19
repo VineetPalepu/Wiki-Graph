@@ -1,8 +1,8 @@
 use std::{
     fs::{read, File},
-    io::{BufRead, BufReader, Read},
+    io::{BufRead, BufReader, Read, Seek, SeekFrom},
     path::Path,
-    time::Instant,
+    time::Instant, convert::TryInto,
 };
 
 use bincode2::{deserialize, serialize};
@@ -98,7 +98,9 @@ pub fn get_article_offset_id_from_index(
 pub fn get_article(data_file: &Path, offset: usize, id: usize) -> String {
     let data_file =
         File::open(data_file).expect(stringify!("couldn't open file {}", data_file.display()));
-    let data_file = BufReader::new(data_file);
+    let mut data_file = BufReader::new(data_file);
+    let offset: u64 = offset.try_into().expect("offset too large???");
+    data_file.seek(SeekFrom::Start(offset)).expect(stringify!("couldn't seek to offset {}", offset));
     let mut decompressor = BzDecoder::new(data_file);
     let mut contents = String::new();
     decompressor
