@@ -7,6 +7,8 @@ edition = "2021"
 
 [dependencies]
 bzip2 = "0.4.3"
+serde = { version = "1.0", features=["derive"]}
+bincode2 = "2.0.1"
 
 [[bench]]
 name = "benchmark"
