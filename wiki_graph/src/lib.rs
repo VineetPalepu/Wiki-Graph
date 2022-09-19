@@ -1,7 +1,11 @@
 use std::{
-    fs::File,
-    io::{BufRead, BufReader}, time::Instant,
+    fs::{File, write, read},
+    io::{BufRead, BufReader},
+    time::Instant, path::Path,
 };
+
+use bincode2::{serialize, deserialize};
+use serde::{Deserialize, Serialize};
 
 pub struct IndexData {
     pub offset: usize,
@@ -42,8 +46,7 @@ pub fn count_lines(index_file: &str) -> usize {
     }
     return count;
 }
-#[derive(Debug)]
-#[derive(Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IndexEntry {
     pub title: String,
     pub id: usize,
@@ -69,23 +72,38 @@ pub fn build_index(index_file: &str) -> Vec<IndexEntry> {
         index.push(IndexEntry { title, id, offset });
     }
     let t = Instant::now();
-    index.sort_unstable_by(|a, b| { a.title.cmp(&b.title) });
+    index.sort_unstable_by(|a, b| a.title.cmp(&b.title));
     println!("{:?} seconds elapsed to sort index", t.elapsed());
 
     index
 }
 
-pub fn get_article_offset_id_from_index(index: &Vec<IndexEntry>, article_title: &str) -> Option<IndexEntry>
-{
-    let result = index.binary_search_by(|a| { a.title.cmp(&article_title.to_string())} );
+pub fn get_article_offset_id_from_index(
+    index: &Vec<IndexEntry>,
+    article_title: &str,
+) -> Option<IndexEntry> {
+    let result = index.binary_search_by(|a| a.title.cmp(&article_title.to_string()));
 
-    match result
-    {
+    match result {
         Ok(i) => Some(index[i].clone()),
-        Err(_) => 
-        {
+        Err(_) => {
             println!("article \'{}\' not found", article_title);
             None
         }
     }
+}
+
+pub fn save_index(index: &Vec<IndexEntry>, file_name: &str)
+{
+    let binary_data = serialize(index).unwrap();
+    write(file_name, binary_data);
+
+}
+
+pub fn load_index(file_name: &str) -> Vec<IndexEntry>
+{
+    let binary_data = read(file_name).unwrap();
+    let index: Vec<IndexEntry> = deserialize(&binary_data).unwrap();
+    
+    index
 }
