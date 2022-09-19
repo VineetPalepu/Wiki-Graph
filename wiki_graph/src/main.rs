@@ -11,11 +11,9 @@ fn main() {
 
     let index = build_index(&index_file);
 
-
     let t = Instant::now();
     save_index(&index, "index.dat");
     println!("{:?} seconds elapsed to save index", t.elapsed());
-    
 
     let t = Instant::now();
     let index = load_index("index.dat");

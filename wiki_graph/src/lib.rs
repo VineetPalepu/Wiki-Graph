@@ -1,10 +1,11 @@
 use std::{
-    fs::{File, write, read},
+    fs::{read, write, File},
     io::{BufRead, BufReader},
-    time::Instant, path::Path,
+    path::Path,
+    time::Instant,
 };
 
-use bincode2::{serialize, deserialize};
+use bincode2::{deserialize, serialize};
 use serde::{Deserialize, Serialize};
 
 pub struct IndexData {
@@ -93,17 +94,14 @@ pub fn get_article_offset_id_from_index(
     }
 }
 
-pub fn save_index(index: &Vec<IndexEntry>, file_name: &str)
-{
+pub fn save_index(index: &Vec<IndexEntry>, file_name: &str) {
     let binary_data = serialize(index).unwrap();
     write(file_name, binary_data);
-
 }
 
-pub fn load_index(file_name: &str) -> Vec<IndexEntry>
-{
+pub fn load_index(file_name: &str) -> Vec<IndexEntry> {
     let binary_data = read(file_name).unwrap();
     let index: Vec<IndexEntry> = deserialize(&binary_data).unwrap();
-    
+
     index
 }

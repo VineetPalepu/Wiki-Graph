@@ -5,7 +5,11 @@ macro_rules! benchmark {
     ($code:expr) => {
         let t = Instant::now();
         $code;
-        println!("{:?} seconds elapsed for: {}", t.elapsed(), stringify!($code));
+        println!(
+            "{:?} seconds elapsed for: {}",
+            t.elapsed(),
+            stringify!($code)
+        );
     };
 }
 
@@ -39,8 +43,7 @@ fn bench_get_article_offset_id() {
     }
 }
 
-fn bench_count_lines()
-{
+fn bench_count_lines() {
     let dir = r"C:\Users\Vineet Palepu\Downloads\enwiki-20220101-pages-articles-multistream\";
     let index_file = "enwiki-20220101-pages-articles-multistream-index.txt";
     let index_file = format!("{}{}", dir, index_file);
@@ -48,8 +51,7 @@ fn bench_count_lines()
     benchmark!(count_lines(&index_file));
 }
 
-fn bench_build_index()
-{
+fn bench_build_index() {
     let dir = r"C:\Users\Vineet Palepu\Downloads\enwiki-20220101-pages-articles-multistream\";
     let index_file = "enwiki-20220101-pages-articles-multistream-index.txt";
     let index_file = format!("{}{}", dir, index_file);
@@ -57,8 +59,7 @@ fn bench_build_index()
     benchmark!(build_index(&index_file));
 }
 
-fn bench_get_article_offset_id_from_index()
-{
+fn bench_get_article_offset_id_from_index() {
     let dir = r"C:\Users\Vineet Palepu\Downloads\enwiki-20220101-pages-articles-multistream\";
     let index_file = "enwiki-20220101-pages-articles-multistream-index.txt";
     let index_file = format!("{}{}", dir, index_file);
