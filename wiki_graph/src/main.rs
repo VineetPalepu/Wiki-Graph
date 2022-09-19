@@ -15,21 +15,18 @@ fn main() {
 
     let file = File::open(cache_file);
 
-    let index = match file
-    {
+    let index = match file {
         // if cache file exists
-        Ok(f) => 
-        {
+        Ok(f) => {
             println!("found cached index at: {}", cache_file);
             let t = Instant::now();
             let index = load_index(cache_file);
             println!("loading cached index took {:?} seconds", t.elapsed());
 
             index
-        },
+        }
         // otherwise, build index and save it
-        Err(_) => 
-        {
+        Err(_) => {
             println!("no cached index found");
             println!("building index from index file at: {}", index_file);
             let t = Instant::now();
@@ -41,7 +38,7 @@ fn main() {
             println!("saving built index took {:?} seconds", t.elapsed());
 
             index
-        },
+        }
     };
 
     // if cache file exists
