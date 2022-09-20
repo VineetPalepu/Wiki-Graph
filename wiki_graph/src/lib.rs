@@ -141,11 +141,27 @@ pub fn get_article_neighbors(index: &Vec<IndexEntry>, data_file: &Path, article_
     for neighbor in re.captures_iter(&article)
     {
         let wikilink = neighbor[1].to_string();
-        let mut title = match wikilink.find("|")
+        let title = match wikilink.find("|")
         {
             Some(i) => wikilink[0..i].to_string(),
             None => wikilink,
         };
+
+        let title = title.chars().enumerate().map(
+            |(i, c)| 
+            {
+                let s;
+                if i == 0
+                {
+                    s = c.to_uppercase().to_string();
+                }
+                else {
+                    s = c.to_string();
+                }
+
+                s
+            }
+        ).collect();
         
         neighbors.push(title);
     }
