@@ -1,26 +1,97 @@
+use std::env;
+use std::fs::read_dir;
 // TODO: Make a hierarchical wiki browser, i.e. when you click a link it keeps track of which article you came from and when you finish an article it goes back to the parent article
 use std::fs::write;
 use std::fs::File;
 use std::path::Path;
 use std::time::Instant;
+use regex::Regex;
 use wiki_graph::*;
 
-fn main() {
-    let dir = r"C:\Users\Vineet Palepu\Downloads\enwiki-20220101-pages-articles-multistream\";
-    let index_file = "enwiki-20220101-pages-articles-multistream-index.txt";
-    let data_file = "enwiki-20220101-pages-articles-multistream.xml.bz2";
-    let index_file = format!("{}{}", dir, index_file);
-    let data_file = format!("{}{}", dir, data_file);
-    let cache_file = r"data\index.dat";
 
-    let file = File::open(cache_file);
+fn get_dir_files(dir: &str) -> Vec<String>
+{
+    let mut files = Vec::new();
+    for file in read_dir(dir).expect(&format!("error opening dir: {dir}"))
+    {
+        if let Ok(file) = file
+        {
+            let file_name = file.file_name();
+            let file_name = file_name.to_str().unwrap();
+            files.push(file_name.to_string());
+        }
+    }
+
+    files
+}
+
+fn get_index_date_str(file_name: &str) -> Option<String>
+{
+    let regex = Regex::new(r"^enwiki-(\d{8})-pages-articles-multistream-index.txt$").unwrap();
+    if let Some(capture) = regex.captures(file_name)
+    {
+        let date_str = capture[1].to_string();
+
+        return Some(date_str);
+    }
+
+    None
+}
+
+// usage: wiki_graph "<article_1>" "<article_2>" ... 
+fn main() {
+    let args: Vec<String> = env::args().collect();
+    
+    let data_folder = r"data";
+
+    let cache_file = format!("{data_folder}\\index.dat");
+    
+    let mut index_file = None;
+    let mut data_file = None;
+
+    let data_files = &get_dir_files(data_folder);
+
+    for potential_index_file in data_files
+    {
+        //check if the file_name matches the index file name pattern
+        if let Some(date_str) = get_index_date_str(&potential_index_file)
+        {
+            index_file = Some(potential_index_file.clone());
+            println!("found index file: {}", potential_index_file);
+
+            let data_regex = Regex::new(&format!(r"^enwiki-{date_str}-pages-articles-multistream.xml.bz2$")).unwrap();
+            for potential_data_file in data_files
+            {
+                if data_regex.is_match(&potential_data_file)
+                {
+                    data_file = Some(potential_data_file.clone());
+                    println!("found data file: {}", potential_data_file);
+                    break;
+                }
+            }
+        }
+    }
+
+    if index_file == None
+    {
+        panic!("couldn't find a index file: {data_folder}\\enwiki-########-pages-articles-multistream-index.txt");
+    }
+    if data_file == None
+    {
+        let date_str = get_index_date_str(&index_file.unwrap()).unwrap();
+        let data_file_name = format!("enwiki-{date_str}-pages-articles-multistream.xml.bz2");
+        panic!("couldn't find a data file: {data_folder}\\{data_file_name}");
+    }
+
+    /*
+    let file = File::open(&cache_file);
 
     let index = match file {
         // if cache file exists
         Ok(_file) => {
             println!("found cached index at: {}", cache_file);
             let t = Instant::now();
-            let index = load_index(cache_file);
+            let index = load_index(&cache_file);
             println!("loading cached index took {:?} seconds", t.elapsed());
 
             index
@@ -34,7 +105,7 @@ fn main() {
             println!("building index took {:?} seconds", t.elapsed());
             println!("saving index");
             let t = Instant::now();
-            save_index(&index, cache_file);
+            save_index(&index, &cache_file);
             println!("saving built index took {:?} seconds", t.elapsed());
 
             index
@@ -62,4 +133,5 @@ fn main() {
         }
         None => println!("article {article} not found"),
     }
+    */
 }
