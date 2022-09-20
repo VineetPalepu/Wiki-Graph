@@ -8,6 +8,7 @@ use std::{
 
 use bincode2::{deserialize, serialize};
 use bzip2::read::BzDecoder;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 pub struct IndexData {
@@ -134,7 +135,13 @@ pub fn get_article_neighbors(index: &Vec<IndexEntry>, data_file: &Path, article_
     let result = get_article_offset_id_from_index(index, article_title).unwrap();
     let article = get_article(data_file, article_title, result.offset, result.id);
 
+    let re = Regex::new(r"\[\[[^\]]*\]\]").unwrap();
+    let neighbors = re.captures_iter(&article);
 
+    for neighbor in neighbors
+    {
+        println!("{}", &neighbor[0]);
+    }
 }
 
 pub fn get_wikitext(article: &str) -> String

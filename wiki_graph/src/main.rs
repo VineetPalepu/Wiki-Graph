@@ -53,6 +53,8 @@ fn main() {
             let contents = get_article(Path::new(&data_file), article, data.offset, data.id);
             write(r"data\out.xml", &contents).unwrap();
             write(r"data\out.txt", get_wikitext(&contents)).unwrap();
+
+            get_article_neighbors(&index, Path::new(&data_file), article);
         }
         None => println!("article {article} not found"),
     }
