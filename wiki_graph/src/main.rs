@@ -38,14 +38,8 @@ fn get_index_date_str(file_name: &str) -> Option<String>
     None
 }
 
-// usage: wiki_graph "<article_1>" "<article_2>" ... 
-fn main() {
-    let args: Vec<String> = env::args().collect();
-    
-    let data_folder = r"data";
-
-    let cache_file = format!("{data_folder}\\index.dat");
-    
+fn get_index_data_file_names(data_folder: &str) -> (String, String)
+{
     let mut index_file = None;
     let mut data_file = None;
 
@@ -82,35 +76,39 @@ fn main() {
         let data_file_name = format!("enwiki-{date_str}-pages-articles-multistream.xml.bz2");
         panic!("couldn't find a data file: {data_folder}\\{data_file_name}");
     }
+    
+    (index_file.unwrap(), data_file.unwrap())
+}
 
-    /*
-    let file = File::open(&cache_file);
+// TODO:
+// usage: wiki_graph "<article_1>" "<article_2>" ... 
+fn main() {
+    let args: Vec<String> = env::args().collect();
+    
+    let data_folder = r"data";
 
-    let index = match file {
-        // if cache file exists
-        Ok(_file) => {
-            println!("found cached index at: {}", cache_file);
-            let t = Instant::now();
-            let index = load_index(&cache_file);
-            println!("loading cached index took {:?} seconds", t.elapsed());
-
-            index
-        }
-        // otherwise, build index and save it
-        Err(_) => {
-            println!("no cached index found");
-            println!("building index from index file at: {}", index_file);
-            let t = Instant::now();
-            let index = build_index(&index_file);
-            println!("building index took {:?} seconds", t.elapsed());
-            println!("saving index");
-            let t = Instant::now();
-            save_index(&index, &cache_file);
-            println!("saving built index took {:?} seconds", t.elapsed());
-
-            index
-        }
-    };
+    let cache_file = format!("{data_folder}\\index.dat");
+    let index;
+    let (index_file, data_file) = get_index_data_file_names(data_folder);
+    if let Ok(_cache_file) = File::open(&cache_file)
+    {
+        println!("found cached index at: {}", cache_file);
+        let t = Instant::now();
+        index = load_index(&cache_file);
+        println!("loading cached index took {:?} seconds", t.elapsed());
+    }
+    else
+    {
+        println!("no cached index found");
+        println!("building index from index file at: {data_folder}\\{index_file}");
+        let t = Instant::now();
+        index = build_index(&format!("{data_folder}\\{index_file}"));
+        println!("building index took {:?} seconds", t.elapsed());
+        println!("saving index");
+        let t = Instant::now();
+        save_index(&index, &cache_file);
+        println!("saving built index took {:?} seconds", t.elapsed());
+    }
 
     let article = "Academic conference";
     let result = get_article_offset_id_from_index(&index, article);
@@ -120,11 +118,11 @@ fn main() {
                 "article {article} found with id {} and offset {}",
                 data.id, data.offset
             );
-            let contents = get_article(Path::new(&data_file), article, data.offset, data.id);
+            let contents = get_article(Path::new(&format!("{data_folder}\\{data_file}")), article, data.offset, data.id);
             write(r"data\out.xml", &contents).unwrap();
             write(r"data\out.txt", get_wikitext(&contents)).unwrap();
 
-            let neighbors = get_article_neighbors(&index, Path::new(&data_file), article);
+            let neighbors = get_article_neighbors(&index, Path::new(&format!("{data_folder}\\{data_file}")), article);
             for n in neighbors
             {
                 println!("{}", n);
@@ -133,5 +131,4 @@ fn main() {
         }
         None => println!("article {article} not found"),
     }
-    */
 }
