@@ -129,6 +129,25 @@ pub fn get_article(data_file: &Path, title: &str, offset: usize, _id: usize) -> 
     article.to_string()
 }
 
+pub fn get_article_neighbors(index: &Vec<IndexEntry>, data_file: &Path, article_title: &str)
+{
+    let result = get_article_offset_id_from_index(index, article_title).unwrap();
+    let article = get_article(data_file, article_title, result.offset, result.id);
+
+
+}
+
+pub fn get_wikitext(article: &str) -> String
+{
+    let start_index = article.find("<text").expect("couldn't find text XML tag");
+    let start_index = article[start_index..].find(">").expect("couldn't find text XML tag") + start_index + 1;
+    let end_index = article.find("</text>").expect("couldn't find text XML closing tag");
+
+    let wikitext = article[start_index..end_index].to_string();
+
+    wikitext
+}
+
 pub fn save_index(index: &Vec<IndexEntry>, file_name: &str) {
     let binary_data = serialize(index).unwrap();
     std::fs::write(file_name, binary_data).unwrap();
