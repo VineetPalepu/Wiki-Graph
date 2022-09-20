@@ -1,12 +1,17 @@
 use std::env;
 use std::fs::read_dir;
-// TODO: Make a hierarchical wiki browser, i.e. when you click a link it keeps track of which article you came from and when you finish an article it goes back to the parent article
 use regex::Regex;
 use std::fs::write;
 use std::fs::File;
 use std::path::Path;
 use std::time::Instant;
 use wiki_graph::*;
+
+
+// TODO: Make a hierarchical wiki browser, i.e. when you click a link it keeps track of which article you came from and when you finish an article it goes back to the parent article
+
+// TODO:
+// usage: wiki_graph "<article_1>" "<article_2>" ...
 
 fn get_dir_files(dir: &str) -> Vec<String> {
     let mut files = Vec::new();
@@ -70,35 +75,17 @@ fn get_index_data_file_names(data_folder: &str) -> (String, String) {
     (index_file.unwrap(), data_file.unwrap())
 }
 
-// TODO:
-// usage: wiki_graph "<article_1>" "<article_2>" ...
 fn main() {
     let _args: Vec<String> = env::args().skip(1).collect();
 
     let data_folder = r"data";
-
-    let cache_file = format!("{data_folder}\\index.dat");
-    let index;
     let (index_file, data_file) = get_index_data_file_names(data_folder);
-    if let Ok(_cache_file) = File::open(&cache_file) {
-        println!("found cached index at: {}", cache_file);
-        let t = Instant::now();
-        index = load_index(&cache_file);
-        println!("loading cached index took {:?} seconds", t.elapsed());
-    } else {
-        println!("no cached index found");
-        println!("building index from index file at: {data_folder}\\{index_file}");
-        let t = Instant::now();
-        index = build_index(&format!("{data_folder}\\{index_file}"));
-        println!("building index took {:?} seconds", t.elapsed());
-        println!("saving index");
-        let t = Instant::now();
-        save_index(&index, &cache_file);
-        println!("saving built index took {:?} seconds", t.elapsed());
-    }
+    let cache_file = format!("{data_folder}\\index.dat");
+
+    let wiki_db = WikiDB::new(Path::new(&index_file), Path::new(&data_file), Path::new(&cache_file));
 
     let article = "Academic conference";
-    let result = get_article_offset_id(&index, article);
+    let result = get_article_offset_id(&wiki_db.index, article);
     match result {
         Some(data) => {
             println!(
@@ -115,7 +102,7 @@ fn main() {
             write(r"data\out.txt", get_wikitext(&contents)).unwrap();
 
             let neighbors = get_article_neighbors(
-                &index,
+                &wiki_db.index,
                 Path::new(&format!("{data_folder}\\{data_file}")),
                 article,
             );

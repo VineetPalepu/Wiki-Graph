@@ -1,8 +1,8 @@
 use std::{
     convert::TryInto,
-    fs::{read, File},
+    fs::{read, write, File},
     io::{BufRead, BufReader, Read, Seek, SeekFrom},
-    path::Path,
+    path::{Path, PathBuf},
     time::Instant,
 };
 
@@ -11,7 +11,50 @@ use bzip2::read::BzDecoder;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 
-pub fn count_lines(index_file: &str) -> usize {
+impl WikiDB
+{
+    pub fn new(index_file: &Path, data_file: &Path, cache_file: &Path) -> WikiDB
+    {
+        let index;
+        //let cache_file = format!("{data_folder}\\index.dat");
+        if let Ok(_cache_file) = File::open(cache_file) {
+            println!("found cached index at: {}", cache_file.display());
+            let t = Instant::now();
+            index = load_index(cache_file);
+            println!("loading cached index took {:?} seconds", t.elapsed());
+        } else {
+            println!("no cached index found");
+            println!("building index from index file at: {}", index_file.display());
+            let t = Instant::now();
+            index = build_index(index_file);
+            println!("building index took {:?} seconds", t.elapsed());
+            println!("saving index");
+            let t = Instant::now();
+            save_index(&index, cache_file);
+            println!("saving built index took {:?} seconds", t.elapsed());
+        }
+
+        WikiDB { index, data: PathBuf::from(data_file) }
+    }
+
+    //TODO: maybe implement get_article_xml(article_title)
+    
+    //TODO: implement get_article_text(article_title)
+    pub fn get_article_text(&self, article_title: &str)
+    {
+        todo!()
+    }
+
+    //TODO: implement get_neighbors(article_title)
+}
+
+pub struct WikiDB
+{
+    pub index: Vec<IndexEntry>,
+    pub data: PathBuf,
+}
+
+pub fn count_lines(index_file: &Path) -> usize {
     let index_file = File::open(index_file).unwrap();
     let index_file = BufReader::new(index_file);
     let lines = index_file.lines();
@@ -28,7 +71,7 @@ pub struct IndexEntry {
     pub offset: usize,
 }
 
-pub fn build_index(index_file: &str) -> Vec<IndexEntry> {
+pub fn build_index(index_file: &Path) -> Vec<IndexEntry> {
     let num_articles = count_lines(&index_file);
 
     let mut index: Vec<IndexEntry> = Vec::with_capacity(num_articles);
@@ -156,13 +199,13 @@ pub fn get_wikitext(article_xml: &str) -> String {
     wikitext
 }
 
-pub fn save_index(index: &Vec<IndexEntry>, file_name: &str) {
+pub fn save_index(index: &Vec<IndexEntry>, index_file: &Path) {
     let binary_data = serialize(index).unwrap();
-    std::fs::write(file_name, binary_data).unwrap();
+    write(index_file, binary_data).unwrap();
 }
 
-pub fn load_index(file_name: &str) -> Vec<IndexEntry> {
-    let binary_data = read(file_name).unwrap();
+pub fn load_index(index_file: &Path) -> Vec<IndexEntry> {
+    let binary_data = read(index_file).unwrap();
     let index: Vec<IndexEntry> = deserialize(&binary_data).unwrap();
 
     index
