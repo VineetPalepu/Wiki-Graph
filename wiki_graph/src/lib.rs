@@ -3,7 +3,7 @@ use std::{
     fs::{read, File},
     io::{BufRead, BufReader, Read, Seek, SeekFrom},
     path::Path,
-    time::Instant, string,
+    time::Instant,
 };
 
 use bincode2::{deserialize, serialize};
@@ -130,49 +130,56 @@ pub fn get_article(data_file: &Path, title: &str, offset: usize, _id: usize) -> 
     article.to_string()
 }
 
-pub fn get_article_neighbors(index: &Vec<IndexEntry>, data_file: &Path, article_title: &str) -> Vec<String>
-{
+pub fn get_article_neighbors(
+    index: &Vec<IndexEntry>,
+    data_file: &Path,
+    article_title: &str,
+) -> Vec<String> {
     let result = get_article_offset_id_from_index(index, article_title).unwrap();
     let article = get_article(data_file, article_title, result.offset, result.id);
 
     let re = Regex::new(r"\[\[([^\]]*)\]\]").unwrap();
     let mut neighbors: Vec<String> = vec![];
 
-    for neighbor in re.captures_iter(&article)
-    {
+    for neighbor in re.captures_iter(&article) {
         let wikilink = neighbor[1].to_string();
-        let title = match wikilink.find("|")
-        {
+        let title = match wikilink.find("|") {
             Some(i) => wikilink[0..i].to_string(),
             None => wikilink,
         };
 
-        let title = title.chars().enumerate().map(
-            |(i, c)| 
-            {
+        let title = title
+            .chars()
+            .enumerate()
+            .map(|(i, c)| {
                 let s;
-                if i == 0
-                {
+                if i == 0 {
                     s = c.to_uppercase().to_string();
-                }
-                else {
+                } else {
                     s = c.to_string();
                 }
 
                 s
-            }
-        ).collect();
-        
+            })
+            .collect();
+
         neighbors.push(title);
     }
 
     neighbors
 }
-pub fn get_wikitext(article_xml: &str) -> String
-{
-    let start_index = article_xml.find("<text").expect("couldn't find text XML tag");
-    let start_index = article_xml[start_index..].find(">").expect("couldn't find text XML tag") + start_index + 1;
-    let end_index = article_xml.find("</text>").expect("couldn't find text XML closing tag");
+pub fn get_wikitext(article_xml: &str) -> String {
+    let start_index = article_xml
+        .find("<text")
+        .expect("couldn't find text XML tag");
+    let start_index = article_xml[start_index..]
+        .find(">")
+        .expect("couldn't find text XML tag")
+        + start_index
+        + 1;
+    let end_index = article_xml
+        .find("</text>")
+        .expect("couldn't find text XML closing tag");
     let wikitext = article_xml[start_index..end_index].to_string();
 
     wikitext
