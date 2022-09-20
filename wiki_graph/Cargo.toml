@@ -9,6 +9,7 @@ edition = "2021"
 bzip2 = "0.4.3"
 serde = { version = "1.0", features=["derive"]}
 bincode2 = "2.0.1"
+regex = "1.6.0"
 
 [[bench]]
 name = "benchmark"

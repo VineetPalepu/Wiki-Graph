@@ -11,7 +11,7 @@ fn main() {
     let data_file = "enwiki-20220101-pages-articles-multistream.xml.bz2";
     let index_file = format!("{}{}", dir, index_file);
     let data_file = format!("{}{}", dir, data_file);
-    let cache_file = "index.dat";
+    let cache_file = r"data\index.dat";
 
     let file = File::open(cache_file);
 
@@ -41,8 +41,7 @@ fn main() {
         }
     };
 
-    let article = "Wireless application service provider";
-    //let result = wiki_graph::get_article_offset_id(&index_file, article);
+    let article = "Academic conference";
     let result = get_article_offset_id_from_index(&index, article);
     match result {
         Some(data) => {
@@ -51,7 +50,15 @@ fn main() {
                 data.id, data.offset
             );
             let contents = get_article(Path::new(&data_file), article, data.offset, data.id);
-            write("out.xml", contents).unwrap();
+            write(r"data\out.xml", &contents).unwrap();
+            write(r"data\out.txt", get_wikitext(&contents)).unwrap();
+
+            let neighbors = get_article_neighbors(&index, Path::new(&data_file), article);
+            for n in neighbors
+            {
+                println!("{}", n);
+            }
+            
         }
         None => println!("article {article} not found"),
     }
