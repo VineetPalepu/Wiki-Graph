@@ -17,30 +17,6 @@ fn main() {
     bench_count_lines();
     bench_build_index();
     bench_get_article_offset_id_from_index();
-    bench_get_article_offset_id();
-}
-
-fn bench_get_article_offset_id() {
-    let dir = r"C:\Users\Vineet Palepu\Downloads\enwiki-20220101-pages-articles-multistream\";
-    let index_file = "enwiki-20220101-pages-articles-multistream-index.txt";
-    let index_file = format!("{}{}", dir, index_file);
-
-    let articles = [
-        "ArtificalLanguages",
-        "Wireless application service provider",
-        "TheFilmSchool",
-        "Vahid Mirzadeh",
-        "William Loren Batt",
-        "Buddhist Tripitaka",
-        "Blight remediation",
-        "Town of Brookhaven",
-        "Floppy disk interface",
-        "OpenHistoricalMap",
-    ];
-
-    for article in articles {
-        benchmark!(get_article_offset_id(&index_file, article));
-    }
 }
 
 fn bench_count_lines() {

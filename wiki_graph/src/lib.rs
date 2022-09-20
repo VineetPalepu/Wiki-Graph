@@ -16,30 +16,6 @@ pub struct IndexData {
     pub id: usize,
 }
 
-pub fn get_article_offset_id(index_file: &str, article_title: &str) -> Option<IndexEntry> {
-    println!("Opening index located at {}", index_file);
-
-    let index_file = match File::open(index_file) {
-        Ok(file) => file,
-        Err(e) => panic!("couldn't open {}: {}", index_file, e),
-    };
-    let index_file = BufReader::new(index_file);
-
-    for article_data in index_file.lines() {
-        let article_data = article_data.unwrap();
-        if article_data.contains(article_title) {
-            let data: Vec<&str> = article_data.split(':').collect();
-
-            let offset: usize = data[0].parse().expect("couldn't parse article byte offset");
-            let id: usize = data[1].parse().expect("couldn't parse article ID");
-            let title = data[2].trim().to_string();
-            return Some(IndexEntry { title, offset, id });
-        }
-    }
-
-    None
-}
-
 pub fn count_lines(index_file: &str) -> usize {
     let index_file = File::open(index_file).unwrap();
     let index_file = BufReader::new(index_file);
