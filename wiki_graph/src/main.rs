@@ -41,8 +41,7 @@ fn main() {
         }
     };
 
-    let article = "Wireless application service provider";
-    //let result = wiki_graph::get_article_offset_id(&index_file, article);
+    let article = "Academic conference";
     let result = get_article_offset_id_from_index(&index, article);
     match result {
         Some(data) => {
@@ -54,7 +53,12 @@ fn main() {
             write(r"data\out.xml", &contents).unwrap();
             write(r"data\out.txt", get_wikitext(&contents)).unwrap();
 
-            get_article_neighbors(&index, Path::new(&data_file), article);
+            let neighbors = get_article_neighbors(&index, Path::new(&data_file), article);
+            for n in neighbors
+            {
+                println!("{}", n);
+            }
+            
         }
         None => println!("article {article} not found"),
     }
