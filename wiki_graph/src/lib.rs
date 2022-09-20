@@ -11,11 +11,6 @@ use bzip2::read::BzDecoder;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 
-pub struct IndexData {
-    pub offset: usize,
-    pub id: usize,
-}
-
 pub fn count_lines(index_file: &str) -> usize {
     let index_file = File::open(index_file).unwrap();
     let index_file = BufReader::new(index_file);
