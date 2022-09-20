@@ -98,7 +98,7 @@ fn main() {
     }
 
     let article = "Academic conference";
-    let result = get_article_offset_id_from_index(&index, article);
+    let result = get_article_offset_id(&index, article);
     match result {
         Some(data) => {
             println!(

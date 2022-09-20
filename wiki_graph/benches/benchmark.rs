@@ -56,6 +56,6 @@ fn bench_get_article_offset_id_from_index() {
     let index = build_index(&index_file);
 
     for article in articles {
-        benchmark!(get_article_offset_id_from_index(&index, article));
+        benchmark!(get_article_offset_id(&index, article));
     }
 }

@@ -58,7 +58,7 @@ pub fn build_index(index_file: &str) -> Vec<IndexEntry> {
     index
 }
 
-pub fn get_article_offset_id_from_index(
+pub fn get_article_offset_id(
     index: &Vec<IndexEntry>,
     article_title: &str,
 ) -> Option<IndexEntry> {
@@ -111,7 +111,7 @@ pub fn get_article_neighbors(
     data_file: &Path,
     article_title: &str,
 ) -> Vec<String> {
-    let result = get_article_offset_id_from_index(index, article_title).unwrap();
+    let result = get_article_offset_id(index, article_title).unwrap();
     let article = get_article(data_file, article_title, result.offset, result.id);
 
     let re = Regex::new(r"\[\[([^\]]*)\]\]").unwrap();
