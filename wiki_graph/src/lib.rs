@@ -59,10 +59,45 @@ impl WikiDB
     }
 
     //TODO: implement get_neighbors(article_title)
-    pub fn get_neighbors(&self, article_title: &str) -> Vec<String>
+    pub fn get_article_neighbors(&self, article_title: &str) -> Result<Vec<String>, String>
     {
-        
-        get_article_neighbors(&self.index, &self.data, article_title)
+        let article_text = self.get_article_text(article_title);
+
+        let article_text = match article_text
+        {
+            Some(s) => s,
+            None => return Err(format!("article '{article_title}' not found")),
+        };
+
+        let re = Regex::new(r"\[\[([^\]]*)\]\]").unwrap();
+        let mut neighbors: Vec<String> = vec![];
+
+        for neighbor in re.captures_iter(&article_text) {
+            let wikilink = neighbor[1].to_string();
+            let title = match wikilink.find("|") {
+                Some(i) => wikilink[0..i].to_string(),
+                None => wikilink,
+            };
+
+            let title = title
+                .chars()
+                .enumerate()
+                .map(|(i, c)| {
+                    let s;
+                    if i == 0 {
+                        s = c.to_uppercase().to_string();
+                    } else {
+                        s = c.to_string();
+                    }
+
+                    s
+                })
+                .collect();
+
+            neighbors.push(title);
+        }
+
+        Ok(neighbors)
     }
 }
 
@@ -162,44 +197,6 @@ pub fn get_article(data_file: &Path, title: &str, offset: usize, _id: usize) -> 
     article.to_string()
 }
 
-pub fn get_article_neighbors(
-    index: &Vec<IndexEntry>,
-    data_file: &Path,
-    article_title: &str,
-) -> Vec<String> {
-    let result = get_article_offset_id(index, article_title).unwrap();
-    let article = get_article(data_file, article_title, result.offset, result.id);
-
-    let re = Regex::new(r"\[\[([^\]]*)\]\]").unwrap();
-    let mut neighbors: Vec<String> = vec![];
-
-    for neighbor in re.captures_iter(&article) {
-        let wikilink = neighbor[1].to_string();
-        let title = match wikilink.find("|") {
-            Some(i) => wikilink[0..i].to_string(),
-            None => wikilink,
-        };
-
-        let title = title
-            .chars()
-            .enumerate()
-            .map(|(i, c)| {
-                let s;
-                if i == 0 {
-                    s = c.to_uppercase().to_string();
-                } else {
-                    s = c.to_string();
-                }
-
-                s
-            })
-            .collect();
-
-        neighbors.push(title);
-    }
-
-    neighbors
-}
 pub fn get_wikitext(article_xml: &str) -> String {
     let start_index = article_xml
         .find("<text")

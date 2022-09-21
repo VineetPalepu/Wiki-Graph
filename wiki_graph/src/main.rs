@@ -86,7 +86,7 @@ fn main() {
     let article = "Academic conference";
 
     println!("{}", wiki_db.get_article_text(article).unwrap());
-    println!("{:?}", wiki_db.get_neighbors(article));
+    println!("{:?}", wiki_db.get_article_neighbors(article).unwrap());
 
     /*
     let result = get_article_offset_id(&wiki_db.index, article);
