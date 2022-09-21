@@ -9,6 +9,25 @@ use wiki_graph::*;
 
 // TODO:
 // usage: wiki_graph "<article_1>" "<article_2>" ...
+fn main()
+{
+    let _args: Vec<String> = env::args().skip(1).collect();
+
+    let data_folder = Path::new("data");
+    let (index_file, data_file) = get_index_data_file_names(data_folder);
+    let cache_file = Path::new("data\\index.dat");
+
+    let wiki_db = WikiDB::new(
+        Path::new(&index_file),
+        Path::new(&data_file),
+        Path::new(&cache_file),
+    );
+
+    let article = "Academic conference";
+
+    println!("{}", wiki_db.get_article_text(article).unwrap());
+    println!("{:?}", wiki_db.get_article_neighbors(article).unwrap());
+}
 
 fn get_dir_files(dir: &Path) -> Vec<PathBuf>
 {
@@ -94,24 +113,4 @@ fn get_index_data_file_names(data_folder: &Path) -> (PathBuf, PathBuf)
     }
 
     (index_file.unwrap(), data_file.unwrap())
-}
-
-fn main()
-{
-    let _args: Vec<String> = env::args().skip(1).collect();
-
-    let data_folder = Path::new("data");
-    let (index_file, data_file) = get_index_data_file_names(data_folder);
-    let cache_file = Path::new("data\\index.dat");
-
-    let wiki_db = WikiDB::new(
-        Path::new(&index_file),
-        Path::new(&data_file),
-        Path::new(&cache_file),
-    );
-
-    let article = "Academic conference";
-
-    println!("{}", wiki_db.get_article_text(article).unwrap());
-    println!("{:?}", wiki_db.get_article_neighbors(article).unwrap());
 }
