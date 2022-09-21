@@ -1,8 +1,13 @@
+use petgraph::Graph;
+use petgraph::dot::Config;
+use petgraph::dot::Dot;
 use regex::Regex;
 use std::env;
 use std::fs::read_dir;
+use std::fs::write;
 use std::path::Path;
 use std::path::PathBuf;
+use std::process::Command;
 use wiki_graph::*;
 
 // TODO: Make a hierarchical wiki browser, i.e. when you click a link it keeps track of which article you came from and when you finish an article it goes back to the parent article
@@ -23,14 +28,26 @@ fn main()
         Path::new(&cache_file),
     );
 
+
+
+    let mut graph: Graph<String, ()> = Graph::new();
+
     for article in articles
     {
+        let a = graph.add_node(article.clone());
         println!("{article}: ");
         for neighbor in wiki_db.get_article_neighbors(&article).unwrap()
         {
             println!("\t{neighbor}");
+            let n = graph.add_node(neighbor.clone());
+            graph.add_edge(a, n, ());
         }
     }
+
+    let result = Dot::with_config(&graph, &[Config::EdgeNoLabel]);
+    write("data\\graph.dot", format!("{result:?}")).unwrap();
+    Command::new("neato").arg(".\\data\\graph.dot").arg("-O").arg("-Tpng").arg("-Goverlap=false").output().unwrap();
+
 
     //println!("{}", wiki_db.get_article_text(article).unwrap());
     //println!("{:?}", wiki_db.get_article_neighbors(article).unwrap());

@@ -10,6 +10,7 @@ bzip2 = "0.4.3"
 serde = { version = "1.0", features=["derive"]}
 bincode2 = "2.0.1"
 regex = "1.6.0"
+petgraph = "0.6.2"
 
 [[bench]]
 name = "benchmark"
