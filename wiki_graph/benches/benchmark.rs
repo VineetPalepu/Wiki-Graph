@@ -1,4 +1,4 @@
-use std::{time::Instant, path::Path};
+use std::{path::Path, time::Instant};
 use wiki_graph::*;
 
 macro_rules! benchmark {
@@ -13,13 +13,15 @@ macro_rules! benchmark {
     };
 }
 
-fn main() {
+fn main()
+{
     bench_count_lines();
     bench_build_index();
     bench_get_article_offset_id_from_index();
 }
 
-fn bench_count_lines() {
+fn bench_count_lines()
+{
     let dir = r"data";
     let index_file = "enwiki-20220101-pages-articles-multistream-index.txt";
     let index_file = format!("{dir}\\{index_file}");
@@ -27,7 +29,8 @@ fn bench_count_lines() {
     benchmark!(count_lines(&Path::new(&index_file)));
 }
 
-fn bench_build_index() {
+fn bench_build_index()
+{
     let dir = r"data";
     let index_file = "enwiki-20220101-pages-articles-multistream-index.txt";
     let index_file = format!("{dir}\\{index_file}");
@@ -35,7 +38,8 @@ fn bench_build_index() {
     benchmark!(build_index(&Path::new(&index_file)));
 }
 
-fn bench_get_article_offset_id_from_index() {
+fn bench_get_article_offset_id_from_index()
+{
     let dir = r"data";
     let index_file = "enwiki-20220101-pages-articles-multistream-index.txt";
     let index_file = format!("{dir}\\{index_file}");
@@ -55,7 +59,8 @@ fn bench_get_article_offset_id_from_index() {
 
     let index = build_index(&Path::new(&index_file));
 
-    for article in articles {
+    for article in articles
+    {
         benchmark!(get_article_offset_id(&index, article));
     }
 }

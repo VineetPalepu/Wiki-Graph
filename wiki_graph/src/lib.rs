@@ -17,7 +17,8 @@ pub struct WikiDB
     pub data: PathBuf,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct IndexEntry {
+pub struct IndexEntry
+{
     pub title: String,
     pub id: usize,
     pub offset: usize,
@@ -29,14 +30,20 @@ impl WikiDB
     {
         let index;
         //let cache_file = format!("{data_folder}\\index.dat");
-        if let Ok(_cache_file) = File::open(cache_file) {
+        if let Ok(_cache_file) = File::open(cache_file)
+        {
             println!("found cached index at: {}", cache_file.display());
             let t = Instant::now();
             index = load_index(cache_file);
             println!("loading cached index took {:?} seconds", t.elapsed());
-        } else {
+        }
+        else
+        {
             println!("no cached index found");
-            println!("building index from index file at: {}", index_file.display());
+            println!(
+                "building index from index file at: {}",
+                index_file.display()
+            );
             let t = Instant::now();
             index = build_index(index_file);
             println!("building index took {:?} seconds", t.elapsed());
@@ -46,7 +53,10 @@ impl WikiDB
             println!("saving built index took {:?} seconds", t.elapsed());
         }
 
-        WikiDB { index, data: PathBuf::from(data_file) }
+        WikiDB {
+            index,
+            data: PathBuf::from(data_file),
+        }
     }
 
     pub fn get_article_xml(&self, article_title: &str) -> Option<String>
@@ -59,7 +69,7 @@ impl WikiDB
 
         Some(xml)
     }
-    
+
     pub fn get_article_text(&self, article_title: &str) -> Option<String>
     {
         let xml = self.get_article_xml(article_title)?;
@@ -80,9 +90,11 @@ impl WikiDB
         let re = Regex::new(r"\[\[([^\]]*)\]\]").unwrap();
         let mut neighbors: Vec<String> = vec![];
 
-        for neighbor in re.captures_iter(&article_text) {
+        for neighbor in re.captures_iter(&article_text)
+        {
             let wikilink = neighbor[1].to_string();
-            let title = match wikilink.find("|") {
+            let title = match wikilink.find("|")
+            {
                 Some(i) => wikilink[0..i].to_string(),
                 None => wikilink,
             };
@@ -92,9 +104,12 @@ impl WikiDB
                 .enumerate()
                 .map(|(i, c)| {
                     let s;
-                    if i == 0 {
+                    if i == 0
+                    {
                         s = c.to_uppercase().to_string();
-                    } else {
+                    }
+                    else
+                    {
                         s = c.to_string();
                     }
 
@@ -109,18 +124,21 @@ impl WikiDB
     }
 }
 
-fn count_lines(file: &Path) -> usize {
+fn count_lines(file: &Path) -> usize
+{
     let file = File::open(file).unwrap();
     let file = BufReader::new(file);
     let lines = file.lines();
     let mut count = 0;
-    for _line in lines {
+    for _line in lines
+    {
         count += 1;
     }
     return count;
 }
 
-fn build_index(index_file: &Path) -> Vec<IndexEntry> {
+fn build_index(index_file: &Path) -> Vec<IndexEntry>
+{
     let num_articles = count_lines(&index_file);
 
     let mut index: Vec<IndexEntry> = Vec::with_capacity(num_articles);
@@ -128,7 +146,8 @@ fn build_index(index_file: &Path) -> Vec<IndexEntry> {
     let index_file = File::open(index_file).unwrap();
     let index_file = BufReader::new(index_file);
 
-    for article_data in index_file.lines() {
+    for article_data in index_file.lines()
+    {
         let article_data = article_data.unwrap();
         let data: Vec<&str> = article_data.split(':').collect();
 
@@ -145,22 +164,23 @@ fn build_index(index_file: &Path) -> Vec<IndexEntry> {
     index
 }
 
-fn get_article_offset_id(
-    index: &Vec<IndexEntry>,
-    article_title: &str,
-) -> Option<IndexEntry> {
+fn get_article_offset_id(index: &Vec<IndexEntry>, article_title: &str) -> Option<IndexEntry>
+{
     let result = index.binary_search_by(|a| a.title.cmp(&article_title.to_string()));
 
-    match result {
+    match result
+    {
         Ok(i) => Some(index[i].clone()),
-        Err(_) => {
+        Err(_) =>
+        {
             println!("article \'{}\' not found", article_title);
             None
-        }
+        },
     }
 }
 
-fn get_article_from_data_file(data_file: &Path, title: &str, offset: usize, _id: usize) -> String {
+fn get_article_from_data_file(data_file: &Path, title: &str, offset: usize, _id: usize) -> String
+{
     let data_file =
         File::open(data_file).expect(&format!("couldn't open file {}", data_file.display()));
     let mut data_file = BufReader::new(data_file);
@@ -175,8 +195,10 @@ fn get_article_from_data_file(data_file: &Path, title: &str, offset: usize, _id:
         .expect("failed to decompress");
 
     let title_index = contents.find(&format!("<title>{}</title>", title));
-    let article = match title_index {
-        Some(title_index) => {
+    let article = match title_index
+    {
+        Some(title_index) =>
+        {
             let start_index = contents[..title_index]
                 .rfind("<page>")
                 .expect("couldn't find beginning of page");
@@ -186,14 +208,15 @@ fn get_article_from_data_file(data_file: &Path, title: &str, offset: usize, _id:
                 .expect("couldn't find end of page");
 
             &contents[start_index..end_index]
-        }
+        },
         None => panic!("article not found in block, implment multiple block reading"),
     };
 
     article.to_string()
 }
 
-fn extract_wikitext_from_xml(article_xml: &str) -> String {
+fn extract_wikitext_from_xml(article_xml: &str) -> String
+{
     let start_index = article_xml
         .find("<text")
         .expect("couldn't find text XML tag");
@@ -210,12 +233,14 @@ fn extract_wikitext_from_xml(article_xml: &str) -> String {
     wikitext
 }
 
-fn save_index(index: &Vec<IndexEntry>, index_file: &Path) {
+fn save_index(index: &Vec<IndexEntry>, index_file: &Path)
+{
     let binary_data = serialize(index).unwrap();
     write(index_file, binary_data).unwrap();
 }
 
-fn load_index(index_file: &Path) -> Vec<IndexEntry> {
+fn load_index(index_file: &Path) -> Vec<IndexEntry>
+{
     let binary_data = read(index_file).unwrap();
     let index: Vec<IndexEntry> = deserialize(&binary_data).unwrap();
 
