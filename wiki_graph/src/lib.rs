@@ -51,13 +51,19 @@ impl WikiDB
     }
     
     //TODO: implement get_article_text(article_title)
-    pub fn get_article_text(&self, article_title: &str)
+    pub fn get_article_text(&self, article_title: &str) -> Option<String>
     {
-        
-        todo!()
+        let xml = self.get_article_xml(article_title)?;
+
+        Some(get_wikitext(&xml))
     }
 
     //TODO: implement get_neighbors(article_title)
+    pub fn get_neighbors(&self, article_title: &str) -> Vec<String>
+    {
+        
+        get_article_neighbors(&self.index, &self.data, article_title)
+    }
 }
 
 pub struct WikiDB
