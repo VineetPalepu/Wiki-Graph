@@ -1,0 +1,8 @@
+unstable_features = true
+brace_style = "AlwaysNextLine"
+control_brace_style = "AlwaysNextLine"
+struct_lit_width = 30
+match_block_trailing_comma = true
+
+# match_arm_block currently not working
+# match_arm_blocks = false
