@@ -7,12 +7,12 @@ use wiki_graph::*;
 
 // TODO: Make a hierarchical wiki browser, i.e. when you click a link it keeps track of which article you came from and when you finish an article it goes back to the parent article
 
-// TODO:
-// usage: wiki_graph "<article_1>" "<article_2>" ...
+// usage: wiki_graph <article_1> <article_2> ...
 fn main()
 {
-    let _args: Vec<String> = env::args().skip(1).collect();
+    let articles: Vec<String> = env::args().skip(1).collect();
 
+    // TODO: mdocment 
     let data_folder = Path::new("data");
     let (index_file, data_file) = get_index_data_file_names(data_folder);
     let cache_file = Path::new("data\\index.dat");
@@ -23,10 +23,17 @@ fn main()
         Path::new(&cache_file),
     );
 
-    let article = "Academic conference";
+    for article in articles
+    {
+        println!("{article}: ");
+        for neighbor in wiki_db.get_article_neighbors(&article).unwrap()
+        {
+            println!("\t{neighbor}");
+        }
+    }
 
-    println!("{}", wiki_db.get_article_text(article).unwrap());
-    println!("{:?}", wiki_db.get_article_neighbors(article).unwrap());
+    //println!("{}", wiki_db.get_article_text(article).unwrap());
+    //println!("{:?}", wiki_db.get_article_neighbors(article).unwrap());
 }
 
 fn get_dir_files(dir: &Path) -> Vec<PathBuf>
