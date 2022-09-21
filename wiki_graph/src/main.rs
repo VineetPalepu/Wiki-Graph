@@ -2,10 +2,7 @@ use std::env;
 use std::fs::read_dir;
 use std::path::PathBuf;
 use regex::Regex;
-use std::fs::write;
-use std::fs::File;
 use std::path::Path;
-use std::time::Instant;
 use wiki_graph::*;
 
 
@@ -87,34 +84,4 @@ fn main() {
 
     println!("{}", wiki_db.get_article_text(article).unwrap());
     println!("{:?}", wiki_db.get_article_neighbors(article).unwrap());
-
-    /*
-    let result = get_article_offset_id(&wiki_db.index, article);
-    match result {
-        Some(data) => {
-            println!(
-                "article {article} found with id {} and offset {}",
-                data.id, data.offset
-            );
-            let contents = get_article(
-                Path::new(&format!("{data_folder}\\{data_file}")),
-                article,
-                data.offset,
-                data.id,
-            );
-            write(r"data\out.xml", &contents).unwrap();
-            write(r"data\out.txt", get_wikitext(&contents)).unwrap();
-
-            let neighbors = get_article_neighbors(
-                &wiki_db.index,
-                Path::new(&format!("{data_folder}\\{data_file}")),
-                article,
-            );
-            for n in neighbors {
-                println!("{}", n);
-            }
-        }
-        None => println!("article {article} not found"),
-    }
-    */
 }

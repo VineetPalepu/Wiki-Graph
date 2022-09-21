@@ -11,6 +11,18 @@ use bzip2::read::BzDecoder;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 
+pub struct WikiDB
+{
+    pub index: Vec<IndexEntry>,
+    pub data: PathBuf,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct IndexEntry {
+    pub title: String,
+    pub id: usize,
+    pub offset: usize,
+}
+
 impl WikiDB
 {
     pub fn new(index_file: &Path, data_file: &Path, cache_file: &Path) -> WikiDB
@@ -37,28 +49,24 @@ impl WikiDB
         WikiDB { index, data: PathBuf::from(data_file) }
     }
 
-    //TODO: maybe implement get_article_xml(article_title)
-
     pub fn get_article_xml(&self, article_title: &str) -> Option<String>
     {
         // get article location in data file
         let entry = get_article_offset_id(&self.index, article_title)?;
 
         // get article xml from data file
-        let xml = get_article(&self.data, article_title, entry.offset, entry.id);
+        let xml = get_article_from_data_file(&self.data, article_title, entry.offset, entry.id);
 
         Some(xml)
     }
     
-    //TODO: implement get_article_text(article_title)
     pub fn get_article_text(&self, article_title: &str) -> Option<String>
     {
         let xml = self.get_article_xml(article_title)?;
 
-        Some(get_wikitext(&xml))
+        Some(extract_wikitext_from_xml(&xml))
     }
 
-    //TODO: implement get_neighbors(article_title)
     pub fn get_article_neighbors(&self, article_title: &str) -> Result<Vec<String>, String>
     {
         let article_text = self.get_article_text(article_title);
@@ -101,30 +109,18 @@ impl WikiDB
     }
 }
 
-pub struct WikiDB
-{
-    pub index: Vec<IndexEntry>,
-    pub data: PathBuf,
-}
-
-pub fn count_lines(index_file: &Path) -> usize {
-    let index_file = File::open(index_file).unwrap();
-    let index_file = BufReader::new(index_file);
-    let lines = index_file.lines();
+fn count_lines(file: &Path) -> usize {
+    let file = File::open(file).unwrap();
+    let file = BufReader::new(file);
+    let lines = file.lines();
     let mut count = 0;
     for _line in lines {
         count += 1;
     }
     return count;
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct IndexEntry {
-    pub title: String,
-    pub id: usize,
-    pub offset: usize,
-}
 
-pub fn build_index(index_file: &Path) -> Vec<IndexEntry> {
+fn build_index(index_file: &Path) -> Vec<IndexEntry> {
     let num_articles = count_lines(&index_file);
 
     let mut index: Vec<IndexEntry> = Vec::with_capacity(num_articles);
@@ -149,7 +145,7 @@ pub fn build_index(index_file: &Path) -> Vec<IndexEntry> {
     index
 }
 
-pub fn get_article_offset_id(
+fn get_article_offset_id(
     index: &Vec<IndexEntry>,
     article_title: &str,
 ) -> Option<IndexEntry> {
@@ -164,7 +160,7 @@ pub fn get_article_offset_id(
     }
 }
 
-pub fn get_article(data_file: &Path, title: &str, offset: usize, _id: usize) -> String {
+fn get_article_from_data_file(data_file: &Path, title: &str, offset: usize, _id: usize) -> String {
     let data_file =
         File::open(data_file).expect(&format!("couldn't open file {}", data_file.display()));
     let mut data_file = BufReader::new(data_file);
@@ -197,7 +193,7 @@ pub fn get_article(data_file: &Path, title: &str, offset: usize, _id: usize) -> 
     article.to_string()
 }
 
-pub fn get_wikitext(article_xml: &str) -> String {
+fn extract_wikitext_from_xml(article_xml: &str) -> String {
     let start_index = article_xml
         .find("<text")
         .expect("couldn't find text XML tag");
@@ -214,12 +210,12 @@ pub fn get_wikitext(article_xml: &str) -> String {
     wikitext
 }
 
-pub fn save_index(index: &Vec<IndexEntry>, index_file: &Path) {
+fn save_index(index: &Vec<IndexEntry>, index_file: &Path) {
     let binary_data = serialize(index).unwrap();
     write(index_file, binary_data).unwrap();
 }
 
-pub fn load_index(index_file: &Path) -> Vec<IndexEntry> {
+fn load_index(index_file: &Path) -> Vec<IndexEntry> {
     let binary_data = read(index_file).unwrap();
     let index: Vec<IndexEntry> = deserialize(&binary_data).unwrap();
 
