@@ -1,5 +1,6 @@
 use std::env;
 use std::fs::read_dir;
+use std::path::PathBuf;
 use regex::Regex;
 use std::fs::write;
 use std::fs::File;
@@ -13,13 +14,11 @@ use wiki_graph::*;
 // TODO:
 // usage: wiki_graph "<article_1>" "<article_2>" ...
 
-fn get_dir_files(dir: &str) -> Vec<String> {
+fn get_dir_files(dir: &Path) -> Vec<PathBuf> {
     let mut files = Vec::new();
-    for file in read_dir(dir).expect(&format!("error opening dir: {dir}")) {
+    for file in read_dir(dir).expect(&format!("error opening dir: {}", dir.display())) {
         if let Ok(file) = file {
-            let file_name = file.file_name();
-            let file_name = file_name.to_str().unwrap();
-            files.push(file_name.to_string());
+            files.push(file.path());
         }
     }
 
@@ -37,7 +36,7 @@ fn get_index_date_str(file_name: &str) -> Option<String> {
     None
 }
 
-fn get_index_data_file_names(data_folder: &str) -> (String, String) {
+fn get_index_data_file_names(data_folder: &Path) -> (PathBuf, PathBuf) {
     let mut index_file = None;
     let mut data_file = None;
 
@@ -45,18 +44,18 @@ fn get_index_data_file_names(data_folder: &str) -> (String, String) {
 
     for potential_index_file in data_files {
         //check if the file_name matches the index file name pattern
-        if let Some(date_str) = get_index_date_str(&potential_index_file) {
+        if let Some(date_str)  = get_index_date_str(potential_index_file.file_name().unwrap().to_str().unwrap()) {
             index_file = Some(potential_index_file.clone());
-            println!("found index file: {}", potential_index_file);
+            println!("found index file: {}", potential_index_file.file_name().unwrap().to_str().unwrap());
 
             let data_regex = Regex::new(&format!(
                 r"^enwiki-{date_str}-pages-articles-multistream.xml.bz2$"
             ))
             .unwrap();
             for potential_data_file in data_files {
-                if data_regex.is_match(&potential_data_file) {
+                if data_regex.is_match(potential_data_file.file_name().unwrap().to_str().unwrap()) {
                     data_file = Some(potential_data_file.clone());
-                    println!("found data file: {}", potential_data_file);
+                    println!("found data file: {}", potential_data_file.file_name().unwrap().to_str().unwrap());
                     break;
                 }
             }
@@ -64,12 +63,12 @@ fn get_index_data_file_names(data_folder: &str) -> (String, String) {
     }
 
     if index_file == None {
-        panic!("couldn't find a index file: {data_folder}\\enwiki-########-pages-articles-multistream-index.txt");
+        panic!("couldn't find a index file: {}\\enwiki-########-pages-articles-multistream-index.txt", data_folder.display());
     }
     if data_file == None {
-        let date_str = get_index_date_str(&index_file.unwrap()).unwrap();
+        let date_str = get_index_date_str(index_file.unwrap().file_name().unwrap().to_str().unwrap()).unwrap();
         let data_file_name = format!("enwiki-{date_str}-pages-articles-multistream.xml.bz2");
-        panic!("couldn't find a data file: {data_folder}\\{data_file_name}");
+        panic!("couldn't find a data file: {}\\{data_file_name}", data_folder.display());
     }
 
     (index_file.unwrap(), data_file.unwrap())
@@ -78,13 +77,17 @@ fn get_index_data_file_names(data_folder: &str) -> (String, String) {
 fn main() {
     let _args: Vec<String> = env::args().skip(1).collect();
 
-    let data_folder = r"data";
+    let data_folder = Path::new("data");
     let (index_file, data_file) = get_index_data_file_names(data_folder);
-    let cache_file = format!("{data_folder}\\index.dat");
+    let cache_file = Path::new("data\\index.dat");
 
     let wiki_db = WikiDB::new(Path::new(&index_file), Path::new(&data_file), Path::new(&cache_file));
 
     let article = "Academic conference";
+
+    println!("{}", wiki_db.get_article_xml(article).unwrap());
+
+    /*
     let result = get_article_offset_id(&wiki_db.index, article);
     match result {
         Some(data) => {
@@ -112,4 +115,5 @@ fn main() {
         }
         None => println!("article {article} not found"),
     }
+    */
 }

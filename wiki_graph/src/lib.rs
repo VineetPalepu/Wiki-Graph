@@ -38,10 +38,22 @@ impl WikiDB
     }
 
     //TODO: maybe implement get_article_xml(article_title)
+
+    pub fn get_article_xml(&self, article_title: &str) -> Option<String>
+    {
+        // get article location in data file
+        let entry = get_article_offset_id(&self.index, article_title)?;
+
+        // get article xml from data file
+        let xml = get_article(&self.data, article_title, entry.offset, entry.id);
+
+        Some(xml)
+    }
     
     //TODO: implement get_article_text(article_title)
     pub fn get_article_text(&self, article_title: &str)
     {
+        
         todo!()
     }
 
@@ -113,7 +125,7 @@ pub fn get_article_offset_id(
 
 pub fn get_article(data_file: &Path, title: &str, offset: usize, _id: usize) -> String {
     let data_file =
-        File::open(data_file).expect(stringify!("couldn't open file {}", data_file.display()));
+        File::open(data_file).expect(&format!("couldn't open file {}", data_file.display()));
     let mut data_file = BufReader::new(data_file);
     let offset: u64 = offset.try_into().expect("offset too large???");
     data_file
