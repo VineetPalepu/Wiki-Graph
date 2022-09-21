@@ -12,7 +12,7 @@ fn main()
 {
     let articles: Vec<String> = env::args().skip(1).collect();
 
-    // TODO: mdocment 
+    // TODO: mdocment
     let data_folder = Path::new("data");
     let (index_file, data_file) = get_index_data_file_names(data_folder);
     let cache_file = Path::new("data\\index.dat");
